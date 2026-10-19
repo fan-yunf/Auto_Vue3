@@ -1,0 +1,20 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "build-deploy-tomcat",
+        "type": "shell",
+        "command": "npm run build; if ($LASTEXITCODE -eq 0) { scp -r ./dist/* root@124.221.172.47:/usr/local/tomcat9/webapps/ROOT; if ($LASTEXITCODE -eq 0) { ssh root@124.221.172.47 'rm -rf /usr/local/tomcat9/webapps/ROOT/WEB-INF; /usr/local/tomcat9/bin/shutdown.sh; sleep 2; /usr/local/tomcat9/bin/startup.sh; chmod -R 755 /usr/local/tomcat9/webapps/ROOT' } }",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        },
+        "problemMatcher": []
+      }
+    ]
+  }
+  
