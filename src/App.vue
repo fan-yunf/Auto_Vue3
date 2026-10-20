@@ -1,9 +1,14 @@
 <script setup>
-import Home from './components/Home.vue'
+import Nav from './page/NavMenu.vue'
 </script>
 
 <template>
-  <div>
-    <Home />
-  </div>
+  
+      <Nav />
+      <router-view />
+  
 </template>
+
+<style scoped>
+
+</style>

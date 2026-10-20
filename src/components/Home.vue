@@ -9,6 +9,7 @@
       </el-upload>
       <el-button type="primary" @click="Creat_NewFile">生成新文件</el-button>
       <el-button type="success" @click="handleInvert">反选</el-button>
+      
     </div>
     <h3>解析出来的数据（共 {{ tableData.length }} 条，已选 {{ selectedRows.length }} 条）</h3>
     <el-table
