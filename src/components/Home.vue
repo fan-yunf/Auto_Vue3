@@ -87,8 +87,9 @@
 import * as XLSX from 'xlsx-js-style'
 import { ref } from 'vue'
 import { Upload } from '@element-plus/icons-vue'
-
+import dayjs from 'dayjs'
 const Init_Data = {
+  File_Name:"",
   Trade_Name: "",
   Trade_Path: "",
   System_Name: "",
@@ -159,7 +160,7 @@ const Creat_NewFile = () => {
     if (!row.caseType) { alert(`【第${row.id + 1}行】案例类型未选择，请检查！`); return }
   }
 
-  const Newfile_Name = Init_Data.Trade_Name + ".xlsx"
+  const Newfile_Name = Init_Data.File_Name + ".xlsx"
   const wb = XLSX.utils.book_new()
 
   // ========== Sheet1：测试大纲 ==========
@@ -180,7 +181,8 @@ const Creat_NewFile = () => {
   XLSX.utils.book_append_sheet(wb, ws1, "测试大纲")
 
   // ========== Sheet2：测试案例 ==========
-  const header = ["系统名称","模块名称","交易名称","编号","案例属性","案例类型","操作步骤","预期结果","验证要点","编写人","测试人","前置条件"]
+  const header = ["系统名称","模块名称","交易名称","案例编号","案例属性","案例类型","验证要点","前置条件","操作步骤","预期结果","编写人","测试人","案例等级","所属专项","是否动账"
+]
   const sheet2Aoa = [header]
   selectedRows.value.forEach((row, idx) => {
     const caseNo = String(idx + 1).padStart(3, "0")
@@ -191,10 +193,13 @@ const Creat_NewFile = () => {
       caseNo,
       row.caseAttr,
       row.caseType,
+      row.content,
+      "",
       row.step,
       row.result,
-      row.content,
       Init_Data.write_Name,
+      "",
+      "",
       "",
       "",
     ])
@@ -222,23 +227,26 @@ const Creat_NewFile = () => {
 
   // 列宽：GHI(6,7,8) 设置宽度60
   ws2['!cols'] = [
-    {wch:12},   // A 系统名称
-    {wch:18},   // B 模块名称
-    {wch:16},   // C 交易名称
-    {wch:8},    // D 编号
-    {wch:12},   // E 案例属性
-    {wch:12},   // F 案例类型
-    {wch:60},   // G 操作步骤
-    {wch:60},   // H 预期结果
-    {wch:60},   // I 验证要点
-    {wch:10},   // J 编写人
-    {wch:10},   // K 测试人
-    {wch:20}    // L 前置条件
+    {wch:15},   	// A 系统名称
+    {wch:15},   	// B 模块名称
+    {wch:15},   	// C 交易名称
+    {wch:8},    	// D 案例编号
+    {wch:12},   	// E 案例属性
+    {wch:12},   	// F 案例类型
+    {wch:50},   	// G 验证要点
+    {wch:15},   	// H 前置条件
+    {wch:50},   	// I 操作步骤
+    {wch:40},   	// J 预期结果
+    {wch:10},   	// K 编写人
+    {wch:10},   	// L 测试人
+    {wch:10},   	// L 案例等级
+    {wch:10},   	// L 所属专项
+    {wch:10}    	// L 是否动账
   ]
 
   // G/H/I列 数据行开启自动换行，垂直居中
   for (let r = 1; r <= dataRowCount; r++) {
-    [6, 7, 8].forEach(c => {
+    [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach(c => {
       const addr = XLSX.utils.encode_cell({ r, c })
       if (ws2[addr]) {
         ws2[addr].s = {
@@ -295,14 +303,16 @@ function readXlsx(file) {
           .map(item => item[0])
           .filter(v => v !== undefined && v !== '')
           .filter((val, idx, self) => self.indexOf(val) === idx)
+        const md = dayjs().format('MMDD')
 
+        Init_Data.File_Name = md + ws["A2"].v +"-"+ws["E2"].v
         Init_Data.Trade_Name  = ws["A2"]?.v ?? ""
         Init_Data.Trade_Path  = ws["B2"]?.v ?? ""
         Init_Data.System_Name = ws["C2"]?.v ?? ""
         Init_Data.first_Fun   = ws["D2"]?.v ?? ""
         Init_Data.write_Name  = ws["E2"]?.v ?? ""
         OldRead_flag.value = 1
-
+        console.log("Init_Data:",Init_Data)
         let steprangeData = XLSX.utils.sheet_to_json(ws, { header: 1, range: dynamicRange })
         steprangeData = steprangeData.map(row => row.slice(0, -1))
         const stepData = steprangeData.map((row) => {
