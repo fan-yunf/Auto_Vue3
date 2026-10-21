@@ -37,6 +37,22 @@
           </el-select>
         </template>
       </el-table-column>
+
+      <el-table-column prop="head" label="前置条件" min-width="280" show-overflow-tooltip>
+        <template #default="scope">
+          <el-input
+            v-if="scope.row.isEditStep"
+            v-model="scope.row.head"
+            type="textarea"
+            :rows="2"
+            size="small"
+            @blur="scope.row.isEditStep = false"
+            @keyup.enter="scope.row.isEditStep = false"
+          />
+          <span v-else>{{ scope.row.head }}</span>
+        </template>
+      </el-table-column>
+
       <el-table-column prop="step" label="操作步骤" min-width="280" show-overflow-tooltip>
         <template #default="scope">
           <el-input
@@ -131,7 +147,7 @@ const handleBeforeUpload = async (file) => {
     'application/vnd.ms-excel'
   ]
   if (!acceptType.includes(file.type)) { alert('请上传 xlsx / xls 文件'); return false }
-  const { lineList, attrOpts, typeOpts, AttriData, typeData, stepData, resuData } = await readXlsx(file)
+  const { lineList, attrOpts, typeOpts, AttriData, typeData, headData, stepData, resuData } = await readXlsx(file)
   caseAttrOptions.value = attrOpts
   caseTypeOptions.value = typeOpts
   tableData.value = lineList.map((content, i) => ({
@@ -139,6 +155,7 @@ const handleBeforeUpload = async (file) => {
     content,
     caseAttr: AttriData[i]?.[0] ?? "",
     caseType: typeData[i]?.[0] ?? "",
+    head: headData[i]?.[0] ?? "",
     step: stepData[i]?.[0] ?? "",
     result: resuData[i]?.[0] ?? "",
     isEdit: false,
@@ -195,7 +212,7 @@ const Creat_NewFile = () => {
       row.caseAttr,
       row.caseType,
       row.content,
-      "",
+      row.head,
       row.step,
       row.result,
       Init_Data.write_Name,
@@ -283,10 +300,12 @@ function readXlsx(file) {
         }
         const fullRange = XLSX.utils.decode_range(ws['!ref'])
         const lastExcelRow = fullRange.e.r + 1
-        const dynamicRange = `C4:H${lastExcelRow}`
+        const dynamicRange = `D4:H${lastExcelRow}`
+        const headRange = `C4:C${lastExcelRow}`
         const AttriRange = `A4:A${lastExcelRow}`
         const typeRange = `B4:B${lastExcelRow}`
         const resuRange = `H4:H${lastExcelRow}`
+        const headData = XLSX.utils.sheet_to_json(ws, { header: 1, range: headRange })
         const rangeData = XLSX.utils.sheet_to_json(ws, { header: 1, range: dynamicRange })
         const AttriData = XLSX.utils.sheet_to_json(ws, { header: 1, range: AttriRange })
         const typeData = XLSX.utils.sheet_to_json(ws, { header: 1, range: typeRange })
@@ -326,7 +345,7 @@ function readXlsx(file) {
           return [processedList.join("")]
         })
 
-        resolve({ lineList, attrOpts, typeOpts, AttriData, typeData, stepData, resuData })
+        resolve({ lineList, attrOpts, typeOpts, AttriData, headData, typeData, stepData, resuData })
       } catch (err) {
         console.error("读取失败", err)
         reject(err)
